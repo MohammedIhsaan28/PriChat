@@ -107,8 +107,7 @@ export default function Page() {
   });
 
   const copyLink = () => {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url);
+    navigator.clipboard.writeText(roomId);
     setCopyStatus("COPIED!");
     setTimeout(() => setCopyStatus("COPY"), 2000);
   };
