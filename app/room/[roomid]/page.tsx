@@ -21,45 +21,46 @@ export default function Page() {
   const [input, setInput] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { username } = useUsername();
+  const [isLoading, setIsLoading] = useState(false);
 
   const [copyStatus, setCopyStatus] = useState("COPY");
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
-  const {data: ttlData} = useQuery({
-    queryKey: ['ttl',roomId],
-    queryFn : async()=>{
+  const { data: ttlData } = useQuery({
+    queryKey: ["ttl", roomId],
+    queryFn: async () => {
       const res = await client.room.ttl.get({
-        query: { roomId }
-      })
+        query: { roomId },
+      });
 
-      return res.data 
-    }
-  })
+      return res.data;
+    },
+  });
 
-  useEffect(()=>{
-    if(ttlData?.ttl !== undefined){
+  useEffect(() => {
+    if (ttlData?.ttl !== undefined) {
       setTimeRemaining(ttlData.ttl);
     }
-  },[ttlData]);
+  }, [ttlData]);
 
-  useEffect(()=>{
-    if(timeRemaining === null || timeRemaining < 0 ) return 
-    if(timeRemaining === 0 ) {
-      router.push('/?destroyed=true');
-      return
+  useEffect(() => {
+    if (timeRemaining === null || timeRemaining < 0) return;
+    if (timeRemaining === 0) {
+      router.push("/?destroyed=true");
+      return;
     }
-    const interval = setInterval(()=>{
-      setTimeRemaining((prev)=>{
-        if(prev === null || prev<=1){
+    const interval = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev === null || prev <= 1) {
           clearInterval(interval);
-          return 0
+          return 0;
         }
-        return prev-1
-      })
-    },1000)
+        return prev - 1;
+      });
+    }, 1000);
 
-    return ()=> clearInterval(interval);
-  },[timeRemaining,router]);
+    return () => clearInterval(interval);
+  }, [timeRemaining, router]);
 
   const { data: messages, refetch } = useQuery({
     queryKey: ["messages", roomId],
@@ -93,17 +94,17 @@ export default function Page() {
         refetch();
       }
 
-      if (event ==='chat.destroy'){
-        router.push('/?destroyed=true');
+      if (event === "chat.destroy") {
+        router.push("/?destroyed=true");
       }
     },
   });
 
-  const {mutate : destroyRoom} = useMutation({
-    mutationFn: async()=>{
-      await client.room.delete(null,{query: {roomId}});
-    }
-  })
+  const { mutate: destroyRoom } = useMutation({
+    mutationFn: async () => {
+      await client.room.delete(null, { query: { roomId } });
+    },
+  });
 
   const copyLink = () => {
     const url = window.location.href;
@@ -148,10 +149,26 @@ export default function Page() {
           </div>
         </div>
 
-        <button onClick={()=> destroyRoom()} className="text-xs bg-zinc-800 hover:bg-red-600 px-3 py-1.5 rounded text-zinc-400 hover:text-white font-bold transition-all group flex items-center gap-2 disabled:opacity-50">
-          <span className="text-md">💥</span>
-          DESTROY NOW
-        </button>
+        {isLoading ? (
+          <button
+            onClick={() => destroyRoom()}
+            className="text-xs bg-red-600 px-3 py-1.5 rounded  hover:text-white font-bold transition-all group flex items-center gap-2 disabled:opacity-50"
+          >
+            <span className="text-md">💥</span>
+            DESTROYING...
+          </button>
+        ) : (
+          <button
+            onClick={() => {
+              destroyRoom();
+              setIsLoading(true);
+            }}
+            className="text-xs bg-zinc-800 hover:bg-red-600 px-3 py-1.5 rounded text-zinc-400 hover:text-white font-bold transition-all group flex items-center gap-2 disabled:opacity-50"
+          >
+            <span className="text-md">💥</span>
+            DESTROY NOW
+          </button>
+        )}
       </header>
 
       {/* Messages */}
@@ -165,7 +182,12 @@ export default function Page() {
         )}
 
         {messages?.messages.map((msg) => (
-          <div key={msg.id} className={`flex flex-col ${msg.sender === username ? 'items-end':'items-start'}`}>
+          <div
+            key={msg.id}
+            className={`flex flex-col ${
+              msg.sender === username ? "items-end" : "items-start"
+            }`}
+          >
             <div className="max-w-[80%] group">
               <div className="flex items-baseline gap-3 mb-1">
                 <span
