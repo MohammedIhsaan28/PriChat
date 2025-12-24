@@ -6,7 +6,7 @@ import { client } from "@/lib/eden";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useState, startTransition } from "react";
 
 const Page = () => {
   return (
@@ -21,6 +21,8 @@ function Home() {
   const [load, setLoad] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [value, setValue] = useState("");
+  const [disable, setDisable] = useState(false);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
   const router = useRouter();
 
@@ -33,12 +35,37 @@ function Home() {
       const res = await client.room.create.post();
       if (res.status === 200) {
         router.push(`/room/${res.data?.roomId}`);
+      } else {
+        throw new Error("Room creation failed");
       }
+    },
+    onSettled: () => setIsLoading(false),
+    onError: () => {
+      setIsLoading(false);
+      setJoinError("Failed to create room");
     },
   });
 
-  const redirect = ({ value }: { value: string }) => {
-    return router.push(`/room/${value}`);
+  const handleJoin = () => {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      setJoinError("Room ID is required");
+      return;
+    }
+
+    setJoinError(null);
+    setLoad(true);
+    setDisable(true);
+
+    startTransition(() => {
+      try {
+        router.push(`/room/${trimmed}`);
+      } catch (e) {
+        setJoinError("Failed to navigate to room");
+        setLoad(false);
+        setDisable(false);
+      }
+    });
   };
 
   return (
@@ -97,8 +124,8 @@ function Home() {
             ) : (
               <button
                 onClick={() => {
-                  createRoom();
                   setIsLoading(true);
+                  createRoom();
                 }}
                 className="w-full bg-zinc-100 text-black font-bold text-sm p-3 hover:bg-zinc-50 hover:text-black transition-colors mt-2 cursor-pointer disabled:opacity-50"
               >
@@ -128,16 +155,14 @@ function Home() {
             {load ? (
               <div className="flex gap-2 ">
                 <button className="w-full rounded-xl font-bold bg-zinc-50 border border-zinc-800 focus:border-zinc-700 focus:outline-none transition-colors text-black text-center py-3 pl-4 pr-4 text-md">
-                  {error ? error : "PLEASE WAIT FOR A WHILE..."}
+                  {joinError ?? error ?? "PLEASE WAIT FOR A WHILE..."}
                 </button>
 
                 <button
-                  onClick={() => {
-                    redirect({ value });
-                  }}
+                  onClick={handleJoin}
                   className="w-16  rounded-2xl bg-zinc-100 text-black font-bold text-sm p-3 hover:bg-zinc-50 hover:text-black transition-colors cursor-pointer disabled:opacity-50"
                 >
-                  {error ? '❌' : (<Loader2 className="h-6 w-6 animate-spin" />)}
+                  {error ? "❌" : <Loader2 className="h-6 w-6 animate-spin" />}
                 </button>
               </div>
             ) : (
@@ -151,10 +176,8 @@ function Home() {
                 />
 
                 <button
-                  onClick={() => {
-                    redirect({ value });
-                    setLoad(true);
-                  }}
+                  disabled={disable}
+                  onClick={handleJoin}
                   className="w-16  rounded-2xl bg-zinc-100 text-black font-bold text-sm p-3 hover:bg-zinc-50 hover:text-black transition-colors cursor-pointer disabled:opacity-50"
                 >
                   {"->"}
