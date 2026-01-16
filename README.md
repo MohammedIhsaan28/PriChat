@@ -1,36 +1,123 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Prichat
+
+A real-time chat application built with modern web technologies. Users can create private chat rooms, invite others, and communicate in real-time with message persistence.
+
+## Features
+
+- **Real-time Messaging**: Instant message delivery using Upstash Realtime
+- **Chat Rooms**: Create and join private chat rooms with unique identifiers
+- **User Management**: Set and manage usernames for chat participation
+- **Message History**: Persistent message storage using Redis
+- **Responsive UI**: Beautiful, responsive interface with Tailwind CSS
+- **Type-Safe**: Built with TypeScript for robust type safety
+- **Modern React**: Uses React 19 with Next.js 16
+
+## Tech Stack
+
+### Frontend
+- **Framework**: Next.js 16 (React 19)
+- **Styling**: Tailwind CSS 4 with PostCSS
+- **State Management**: TanStack React Query
+- **UI Components**: Lucide React icons, shadcn-inspired components
+- **3D Graphics**: Three.js (for visual effects)
+- **Utilities**: clsx, tailwind-merge, date-fns
+
+### Backend
+- **API Framework**: Elysia with TypeScript
+- **Real-time**: Upstash Realtime
+- **Database**: Upstash Redis
+- **Validation**: Zod
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# Install dependencies
+npm install
+
+# Set up environment variables
+# Create a .env.local file with your Upstash credentials:
+# UPSTASH_REDIS_REST_URL=your_redis_url
+# UPSTASH_REDIS_REST_TOKEN=your_redis_token
+# UPSTASH_REDIS_URL=your_redis_connection_string
+# UPSTASH_REDIS_TOKEN=your_redis_token
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+# Run the development server
+npm run dev
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Open http://localhost:3000 in your browser
+```
 
-## Learn More
+### Production
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Build the application
+npm run build
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Start the production server
+npm start
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+├── app/                    # Next.js app directory
+│   ├── api/               # API routes
+│   │   ├── [[...slugs]]/  # Dynamic authentication and routes
+│   │   └── realtime/      # Real-time WebSocket endpoint
+│   ├── room/              # Chat room page
+│   └── layout.tsx         # Root layout
+├── components/            # React components
+│   ├── LoadingSkeleton.tsx
+│   ├── PixelSnow.tsx
+│   └── Providers.tsx
+├── hooks/                 # Custom React hooks
+│   └── use-username.ts
+├── lib/                   # Utility libraries
+│   ├── eden.ts            # Elysia client setup
+│   ├── realtime.ts        # Realtime schema definition
+│   ├── realtime-client.ts # Realtime client logic
+│   ├── redis.ts           # Redis client
+│   └── utils.ts
+└── types/                 # TypeScript type definitions
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## API Routes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Authentication & Dynamic Routes
+- `GET/POST /api/[[...slugs]]` - Handles authentication and dynamic routing
+
+### Real-time
+- `GET /api/realtime` - WebSocket endpoint for real-time messaging
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm start` - Start production server
+- `npm run lint` - Run ESLint
+
+## Usage
+
+1. **Enter a username** - Set your username on the home page
+2. **Create or join a room** - Enter a room ID or create a new one
+3. **Chat in real-time** - Send and receive messages instantly
+4. **Share rooms** - Invite others using the room ID
+
+## Environment Setup
+
+This project requires Upstash (Redis and Realtime) credentials. Sign up at [upstash.com](https://upstash.com) and configure your `.env.local` file.
+
+
+## Support
+
+For issues or questions, please refer to the project documentation.
